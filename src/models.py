@@ -73,10 +73,20 @@ class Graph:
     def add_node(self, node: GraphNode) -> None:
         """Add a node to the graph."""
         self.nodes[node.id] = node
+        # Attach back-reference so other utilities can access graph context from node
+        try:
+            node._graph = self
+        except Exception:
+            pass
     
     def add_relationship(self, relationship: GraphRelationship) -> None:
         """Add a relationship to the graph."""
         self.relationships[relationship.id] = relationship
+        # Attach back-reference for relationship
+        try:
+            relationship._graph = self
+        except Exception:
+            pass
         
         # Update adjacency list
         self.adjacency_list[relationship.start_node_id].add(relationship.end_node_id)
@@ -143,6 +153,8 @@ class GraphComparisonResult:
     minimum_common_supergraph_size: int = 0
     supergraph_ratio_graph1: float = 0.0
     supergraph_ratio_graph2: float = 0.0
+    # Structural Jaccard based on node equivalence (asset type + local relationships)
+    structural_jaccard: float = 0.0
     
     # Isomorphism invariants
     node_count_difference: int = 0

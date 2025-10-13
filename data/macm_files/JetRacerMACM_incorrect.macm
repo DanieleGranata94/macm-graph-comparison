@@ -13,8 +13,7 @@ CREATE
         (ServoMotor:HW:Device {component_id:'12', name:'Servo Motor', type:'HW.Device', app_id:'db.5.81e131782d156db35e384596e924ecf1fa42cf81',application:'JetRacer'}),
         (ESP32:HW:Microcontroller {component_id:'13', name:'ESP-32', type:'HW.Microcontroller', app_id:'db.5.81e131782d156db35e384596e924ecf1fa42cf81',application:'JetRacer'}),
         (SpeedSensor:HW:Device {component_id:'14', name:'Speed Sensor', type:'HW.Device', app_id:'db.5.81e131782d156db35e384596e924ecf1fa42cf81',application:'JetRacer'}),
-        (Joystick:HW:HDI {name:'Joystick', type:'HW.Device', app_id:'db.5.81e131782d156db35e384596e924ecf1fa42cf81',application:'JetRacer'}),
-        //(Jupyter:Service:Web {component_id:'16', name:'Jupyter Server-side', type:'Service.Web', app_id:'db.5.81e131782d156db35e384596e924ecf1fa42cf81',application:'JetRacer', parameters: '{"port":"8000"}'}),
+        (Joystick:HW:HDI {component_id:'15', name:'Joystick', type:'HW.Device', app_id:'db.5.81e131782d156db35e384596e924ecf1fa42cf81',application:'JetRacer'}),
 
         (CSC)-[:uses]->(Joystick),
         (CSC)-[:uses]->(Browser),
@@ -29,4 +28,5 @@ CREATE
         (JetRacer)-[:hosts]->(ESP32),
         (ESP32)-[:hosts]->(SpeedSensor),
         (Firmware)-[:hosts]->(Jupyter),
-        (PC)-[:hosts]->(OS)
+        (PC)-[:hosts]->(OS),
+        (OS)-[:hosts]->(Browser)

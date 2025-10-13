@@ -27,8 +27,8 @@ class AppConfig:
     """Application configuration settings."""
     
     # File paths
-    cypher_file_1: str = "data/macm_files/wrong_architecture.macm"
-    cypher_file_2: str = "data/macm_files/correct_architecture.macm"
+    cypher_file_1: str = "data/macm_files/JetRacerMACM_incorrect.macm"
+    cypher_file_2: str = "data/macm_files/JetRacerMACM_correct.macm"
     
     # Logging
     log_level: str = "INFO"
@@ -56,8 +56,8 @@ def get_config() -> tuple[DatabaseConfig, AppConfig]:
     )
     
     app_config = AppConfig(
-        cypher_file_1=os.getenv("CYPHER_FILE_1", "data/macm_files/wrong_architecture.macm"),
-        cypher_file_2=os.getenv("CYPHER_FILE_2", "data/macm_files/correct_architecture.macm"),
+        cypher_file_1=os.getenv("CYPHER_FILE_1", "data/macm_files/JetRacerMACM_incorrect.macm"),
+        cypher_file_2=os.getenv("CYPHER_FILE_2", "data/macm_files/JetRacerMACM_correct.macm"),
         log_level=os.getenv("LOG_LEVEL", "INFO"),
         log_file=os.getenv("LOG_FILE"),
         verbose=os.getenv("VERBOSE", "false").lower() == "true",
