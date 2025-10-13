@@ -91,6 +91,19 @@ class GraphComparisonApp:
                 if self.app_config.output_format != "text":
                     self._save_results(comparison_result, cypher_file1, cypher_file2)
                 
+                # Se i file sono i JetRacer, genera i grafici PNG
+                from metrics import plot_jetracer_comparison
+                if ("JetRacerMACM_correct.macm" in cypher_file1 and "JetRacerMACM_incorrect.macm" in cypher_file2) or ("JetRacerMACM_incorrect.macm" in cypher_file1 and "JetRacerMACM_correct.macm" in cypher_file2):
+                    # Confronto bidirezionale
+                    result1 = metrics_calculator.compare_graphs(graph1, graph2)
+                    result2 = metrics_calculator.compare_graphs(graph2, graph1)
+                    from metrics import plot_jetracer_all_metrics
+                    plot_jetracer_all_metrics(result1, result2)
+                    from metrics import plot_similarity_metrics_all, plot_similarity_metrics_normalized, plot_normalized_to_identity
+                    plot_similarity_metrics_all(result1)
+                    plot_similarity_metrics_normalized(result1)
+                    plot_normalized_to_identity(result1)
+                    self.logger.info("Grafici PNG generati nella cartella output/")
                 self.logger.info("Graph comparison completed successfully")
                 
         except Exception as e:
