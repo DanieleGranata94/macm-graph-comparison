@@ -27,8 +27,8 @@ class AppConfig:
     """Application configuration settings."""
     
     # File paths
-    cypher_file_1: str = "data/macm_files/JetRacerMACM_incorrect.macm"
-    cypher_file_2: str = "data/macm_files/JetRacerMACM_correct.macm"
+    cypher_file_1: str = "data/macm_files/Ewelink_incorrect.macm"
+    cypher_file_2: str = "data/macm_files/Ewelink_correct.macm"
     
     # Logging
     log_level: str = "INFO"
