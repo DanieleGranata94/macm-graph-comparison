@@ -103,18 +103,14 @@ class GraphComparisonApp:
                 except Exception as e:
                     self.logger.warning(f"Unable to generate graph diff: {e}")
                 
-                # Se i file sono i JetRacer, genera i grafici PNG
-                from metrics import plot_jetracer_comparison
-                if ("JetRacerMACM_correct.macm" in cypher_file1 and "JetRacerMACM_incorrect.macm" in cypher_file2) or ("JetRacerMACM_incorrect.macm" in cypher_file1 and "JetRacerMACM_correct.macm" in cypher_file2):
-                    # Confronto bidirezionale: produci 3 grafici richiesti
-                    result1 = metrics_calculator.compare_graphs(graph1, graph2)
-                    result2 = metrics_calculator.compare_graphs(graph2, graph1)
-                    from metrics import plot_all_metrics_raw, plot_metrics_in_0_1_range, plot_all_metrics_normalized
-                    # Produci grafici per result1 (graph1 vs graph2)
-                    plot_all_metrics_raw(result1)
-                    plot_metrics_in_0_1_range(result1)
-                    plot_all_metrics_normalized(result1)
-                    self.logger.info("Grafici PNG generati nella cartella output/")
+                # Genera sempre le visualizzazioni dei grafi di input come PNG
+                try:
+                    from metrics import generate_graph_visualizations
+                    generate_graph_visualizations(graph1, graph2, "output/macm_output", cypher_file1, cypher_file2)
+                    self.logger.info("Visualizzazioni dei grafi PNG generate nella cartella output/macm_output/")
+                except Exception as e:
+                    self.logger.warning(f"Errore durante la generazione delle visualizzazioni dei grafi: {e}")
+                
                 self.logger.info("Graph comparison completed successfully")
                 return comparison_result
                 

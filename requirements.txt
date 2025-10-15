@@ -5,7 +5,8 @@
 neo4j>=5.0.0,<7.0.0
 
 # Optional: For enhanced mathematical operations and graph algorithms
-# networkx>=3.0  # Uncomment if you want to use NetworkX for additional graph algorithms
+networkx>=3.0  # For graph visualization
+matplotlib>=3.5.0  # For plotting and visualization
 # numpy>=1.20.0  # Uncomment if you need numerical computations
 # scipy>=1.7.0   # Uncomment for advanced mathematical functions
 

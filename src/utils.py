@@ -66,6 +66,10 @@ def load_graph_from_cypher_file(neo4j_manager: Neo4jManager, file_path: str) -> 
         # Clear database first
         neo4j_manager.clear_database()
         
+        # Prima di eseguire il file, estrai la mappatura delle variabili Cypher
+        cypher_var_mapping = _extract_cypher_variable_mapping(file_path)
+        logger.info(f"Cypher variable mapping: {cypher_var_mapping}")
+        
         # Execute Cypher file
         neo4j_manager.execute_cypher_file(file_path)
         
@@ -73,31 +77,50 @@ def load_graph_from_cypher_file(neo4j_manager: Neo4jManager, file_path: str) -> 
         neo4j_nodes = neo4j_manager.get_all_nodes()
         graph = Graph()
         
+        # Crea mappatura: component_id -> variabile_cypher per trovare l'ID corretto
+        component_to_cypher_var = {comp_id: var for var, comp_id in cypher_var_mapping.items()}
+        
         for neo4j_node in neo4j_nodes:
+            component_id = neo4j_node.get('component_id', str(neo4j_node.element_id))
+            # Usa la variabile Cypher come ID del nodo (es. "CSP", "WAN", "CoolKit_API")
+            cypher_var_id = component_to_cypher_var.get(component_id, component_id)
+            
             graph_node = GraphNode(
-                id=neo4j_node.get('component_id', str(neo4j_node.element_id)),
+                id=cypher_var_id,
                 labels=set(neo4j_node.labels),
                 properties=dict(neo4j_node),
                 element_id=neo4j_node.element_id
             )
             graph.add_node(graph_node)
         
-        # Load relationships
+        # Crea una mappatura: element_id -> cypher_var usando i nodi caricati
+        element_to_cypher_var = {}
+        for node in graph.nodes.values():
+            element_to_cypher_var[node.element_id] = node.id
+        
+        # Load relationships usando la mappatura delle variabili Cypher
         neo4j_relationships = neo4j_manager.get_all_relationships()
         
         for neo4j_rel in neo4j_relationships:
             start_node = neo4j_rel.start_node
             end_node = neo4j_rel.end_node
             
-            graph_rel = GraphRelationship(
-                id=f"{start_node.element_id}_{end_node.element_id}_{neo4j_rel.type}",
-                start_node_id=start_node.get('component_id', str(start_node.element_id)),
-                end_node_id=end_node.get('component_id', str(end_node.element_id)),
-                relationship_type=neo4j_rel.type,
-                properties=dict(neo4j_rel),
-                element_id=neo4j_rel.element_id
-            )
-            graph.add_relationship(graph_rel)
+            # Usa element_id per trovare le variabili Cypher corrispondenti
+            start_cypher_var = element_to_cypher_var.get(start_node.element_id)
+            end_cypher_var = element_to_cypher_var.get(end_node.element_id)
+            
+            if start_cypher_var and end_cypher_var:
+                graph_rel = GraphRelationship(
+                    id=f"{start_cypher_var}_{end_cypher_var}_{neo4j_rel.type}",
+                    start_node_id=start_cypher_var,
+                    end_node_id=end_cypher_var,
+                    relationship_type=neo4j_rel.type,
+                    properties=dict(neo4j_rel),
+                    element_id=neo4j_rel.element_id
+                )
+                graph.add_relationship(graph_rel)
+            else:
+                logger.warning(f"Impossibile mappare relazione: start_element_id={start_node.element_id}, end_element_id={end_node.element_id}")
         
         logger.info(f"Loaded graph from {file_path}: {len(graph.nodes)} nodes, {len(graph.relationships)} relationships")
         return graph
@@ -249,38 +272,75 @@ def _format_as_csv(result: GraphComparisonResult) -> str:
     return "\n".join(lines)
 
 
-def validate_cypher_files(file1_path: str, file2_path: str) -> bool:
+def _extract_cypher_variable_mapping(file_path: str) -> Dict[str, str]:
     """
-    Validate that Cypher files exist and are readable.
+    Estrae la mappatura tra variabili Cypher e component_id dal file.
     
     Args:
-        file1_path: Path to first Cypher file
-        file2_path: Path to second Cypher file
+        file_path: Path al file Cypher
         
     Returns:
-        True if both files are valid, False otherwise
+        Dizionario {variabile_cypher: component_id}
+    """
+    import re
+    
+    mapping = {}
+    
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Pattern per trovare le definizioni dei nodi nel formato:
+        # (variabile:Label1:Label2 {component_id: 'id', ...})
+        pattern = r'\((\w+):[^{]*\{[^}]*component_id:\s*[\'"]([^\'"]+)[\'"][^}]*\}'
+        
+        matches = re.findall(pattern, content)
+        for var_name, component_id in matches:
+            mapping[var_name] = component_id
+            
+    except Exception as e:
+        logging.getLogger(__name__).error(f"Error extracting Cypher variable mapping: {e}")
+    
+    return mapping
+
+
+def validate_cypher_files(*file_paths: str) -> bool:
+    """
+    Validate that the provided Cypher files exist and are readable.
+    
+    Args:
+        *file_paths: Variable number of file paths to validate
+        
+    Returns:
+        True if all files are valid, False otherwise
     """
     logger = logging.getLogger(__name__)
     
-    files = [file1_path, file2_path]
-    for file_path in files:
+    for file_path in file_paths:
+        if not file_path:
+            logger.error("Empty file path provided")
+            return False
+            
         path = Path(file_path)
         if not path.exists():
-            logger.error(f"Cypher file not found: {file_path}")
+            logger.error(f"File does not exist: {file_path}")
             return False
-        
+            
         if not path.is_file():
             logger.error(f"Path is not a file: {file_path}")
             return False
-        
+            
+        if not path.suffix.lower() in ['.cypher', '.cql', '.macm']:
+            logger.warning(f"File does not have a recognized Cypher extension: {file_path}")
+            
         try:
-            with open(path, 'r') as f:
+            with open(path, 'r', encoding='utf-8') as f:
                 content = f.read().strip()
                 if not content:
-                    logger.error(f"Cypher file is empty: {file_path}")
+                    logger.error(f"File is empty: {file_path}")
                     return False
         except Exception as e:
-            logger.error(f"Error reading Cypher file {file_path}: {e}")
+            logger.error(f"Cannot read file {file_path}: {e}")
             return False
     
     return True
