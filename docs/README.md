@@ -118,6 +118,105 @@ export OUTPUT_FORMAT="json"
 ### 1. Edit Distance
 Measures the minimum number of operations (add, delete, substitute nodes/edges) required to transform one graph into another.
 
+## 📐 Come Viene Calcolata l'Edit Distance
+
+L'**Edit Distance** misura il numero minimo di operazioni necessarie per trasformare un grafo in un altro.
+
+### Algoritmo utilizzato:
+
+1. **Converti i grafi in signature canoniche**:
+   - **Node Signature**: `(type, sorted_multiset_of_local_relations)`
+   - **Edge Signature**: `(start_type, edge_type, end_type)`
+
+2. **Calcola differenze nei multiset**:
+   ```
+   Edit Distance = |multiset_A - multiset_B| + |multiset_B - multiset_A|
+   ```
+
+### Esempio concreto: Test Case 2
+
+#### Grafo A (test_one_node_diff_A.macm):
+```cypher
+CREATE 
+(server:HW:Server {component_id: '1', name: 'Server', type: 'HW.Server'}),
+(database:Service:Database {component_id: '2', name: 'Database', type: 'Service.Database'}),
+(client:HW:UE {component_id: '3', name: 'Client', type: 'HW.UE'}),
+(server)-[:hosts {}]->(database),
+(client)-[:connects {}]->(server);
+```
+
+- **Nodi**: Server, Database, Client (3 nodi)
+- **Relazioni**: Server→hosts→Database, Client→connects→Server (2 relazioni)
+
+**Node Signatures A:**
+```python
+('HW.Server', (('hosts', 'out'), 1))
+('Service.Database', (('hosts', 'in'), 1))
+('HW.UE', (('connects', 'out'), 1))
+```
+
+**Edge Signatures A:**
+```python
+('HW.Server', 'hosts', 'Service.Database')
+('HW.UE', 'connects', 'HW.Server')
+```
+
+#### Grafo B (test_one_node_diff_B.macm):
+```cypher
+CREATE 
+(server:HW:Server {component_id: '1', name: 'Server', type: 'HW.Server'}),
+(database:Service:Database {component_id: '2', name: 'Database', type: 'Service.Database'}),
+(client:HW:UE {component_id: '3', name: 'Client', type: 'HW.UE'}),
+(firewall:Security:Firewall {component_id: '4', name: 'Firewall', type: 'Security.Firewall'}),
+(server)-[:hosts {}]->(database),
+(client)-[:connects {}]->(firewall),
+(firewall)-[:connects {}]->(server);
+```
+
+- **Nodi**: Server, Database, Client, **Firewall** (4 nodi)
+- **Relazioni**: Server→hosts→Database, Client→connects→**Firewall**, **Firewall→connects→Server** (3 relazioni)
+
+**Node Signatures B:**
+```python
+('HW.Server', (('connects', 'in'), 1), (('hosts', 'out'), 1))  # ← DIVERSA!
+('Service.Database', (('hosts', 'in'), 1))
+('HW.UE', (('connects', 'out'), 1))
+('Security.Firewall', (('connects', 'in'), 1), (('connects', 'out'), 1))  # ← NUOVA!
+```
+
+**Edge Signatures B:**
+```python
+('HW.Server', 'hosts', 'Service.Database')
+('HW.UE', 'connects', 'Security.Firewall')  # ← DIVERSA!
+('Security.Firewall', 'connects', 'HW.Server')  # ← NUOVA!
+```
+
+### Calcolo Edit Distance:
+
+**Operazioni necessarie:**
+
+1. **Node Operations**:
+   - Add: `('Security.Firewall', (('connects', 'in'), 1), (('connects', 'out'), 1))` → **1 operazione**
+
+2. **Edge Operations**:
+   - Remove: `('HW.UE', 'connects', 'HW.Server')` → **1 operazione**
+   - Add: `('HW.UE', 'connects', 'Security.Firewall')` → **1 operazione**
+   - Add: `('Security.Firewall', 'connects', 'HW.Server')` → **1 operazione**
+
+**Risultato:**
+- **Edit Distance totale: 4.0** (1 nodo + 3 edge operations)
+- **Normalized: 4.0 / 7 = 0.571** (57% di differenza)
+
+### Perché 4 operazioni e non 2?
+
+Anche se logicamente stiamo "aggiungendo un nodo Firewall nel mezzo", l'algoritmo conta:
+1. **Aggiunta del nodo Firewall** (1 op)
+2. **Rimozione** della connessione diretta Client→Server (1 op)
+3. **Aggiunta** di Client→Firewall (1 op)
+4. **Aggiunta** di Firewall→Server (1 op)
+
+Questo perché l'Edit Distance opera su **signature strutturali**: quando modifichi la topologia, devi rimuovere le vecchie connessioni e aggiungere le nuove. Non esiste un'operazione atomica "inserisci nodo nel mezzo di un percorso".
+
 ### 2. Maximum Common Subgraph (MCS)
 Finds the largest subgraph that exists in both graphs, providing insight into shared structure.
 

@@ -1,0 +1,15 @@
+// Test Case 5B: Grafo Grande (contiene 5A come sottoinsieme)
+// Expected vs 5A: MCS = dimensione di A, Edit Distance = elementi aggiunti
+
+CREATE 
+(server:HW:Server {component_id: '1', name: 'Server', type: 'HW.Server'}),
+(database:Service:Database {component_id: '2', name: 'Database', type: 'Service.Database'}),
+(cache:Service:Cache {component_id: '3', name: 'Cache', type: 'Service.Cache'}),
+(loadbalancer:HW:LoadBalancer {component_id: '4', name: 'LoadBalancer', type: 'HW.LoadBalancer'}),
+(client:HW:UE {component_id: '5', name: 'Client', type: 'HW.UE'}),
+
+(server)-[:hosts {}]->(database),
+(server)-[:hosts {}]->(cache),
+(loadbalancer)-[:connects {}]->(server),
+(client)-[:connects {}]->(loadbalancer);
+

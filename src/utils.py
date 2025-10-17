@@ -187,18 +187,15 @@ def _format_as_text(result: GraphComparisonResult) -> str:
     output.append(f"  Degree Distribution Similarity: {result.degree_distribution_similarity:.3f}")
     output.append(f"  Label Distribution Similarity: {result.label_distribution_similarity:.3f}")
     
-    # Similarity score
-    similarity_score = result.get_similarity_score()
-    output.append(f"\nOverall Similarity Score: {similarity_score:.3f}")
-    
-    if similarity_score >= 0.8:
-        output.append("  Interpretation: Very similar graphs")
-    elif similarity_score >= 0.6:
-        output.append("  Interpretation: Moderately similar graphs")
-    elif similarity_score >= 0.4:
-        output.append("  Interpretation: Somewhat similar graphs")
+    # Edit distance interpretation
+    if result.normalized_edit_distance <= 0.2:
+        output.append("\nInterpretation: Very similar graphs")
+    elif result.normalized_edit_distance <= 0.4:
+        output.append("\nInterpretation: Moderately similar graphs")
+    elif result.normalized_edit_distance <= 0.6:
+        output.append("\nInterpretation: Somewhat similar graphs")
     else:
-        output.append("  Interpretation: Very different graphs")
+        output.append("\nInterpretation: Very different graphs")
     
     # Detailed differences
     output.append(f"\nDetailed Differences:")
@@ -215,7 +212,6 @@ def _format_as_text(result: GraphComparisonResult) -> str:
 def _format_as_json(result: GraphComparisonResult) -> str:
     """Format results as JSON."""
     data = {
-        "similarity_score": result.get_similarity_score(),
         "edit_distance": {
             "value": result.edit_distance,
             "normalized": result.normalized_edit_distance
@@ -255,7 +251,6 @@ def _format_as_csv(result: GraphComparisonResult) -> str:
     """Format results as CSV."""
     lines = []
     lines.append("Metric,Value")
-    lines.append(f"Similarity Score,{result.get_similarity_score():.3f}")
     lines.append(f"Edit Distance,{result.edit_distance:.2f}")
     lines.append(f"Normalized Edit Distance,{result.normalized_edit_distance:.3f}")
     lines.append(f"MCS Size,{result.maximum_common_subgraph_size}")

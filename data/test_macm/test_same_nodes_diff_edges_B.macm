@@ -1,0 +1,11 @@
+// Test Case 4B: Topologia a Stella (stessi nodi, connessioni diverse)
+// Expected vs 4A: Edit Distance media, MCS = 0 (signature diverse)
+
+CREATE 
+(node1:HW:Device {component_id: '1', name: 'Device1', type: 'HW.Device'}),
+(node2:HW:Device {component_id: '2', name: 'Device2', type: 'HW.Device'}),
+(node3:HW:Device {component_id: '3', name: 'Device3', type: 'HW.Device'}),
+
+(node2)-[:connects {}]->(node1),
+(node2)-[:connects {}]->(node3);
+

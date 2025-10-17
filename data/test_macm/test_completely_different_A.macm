@@ -1,0 +1,13 @@
+// Test Case 3A: Architettura Web
+// Expected vs 3B: Edit Distance alta, MCS = 0, completamente diversi
+
+CREATE 
+(web_server:HW:Server {component_id: '1', name: 'WebServer', type: 'HW.Server'}),
+(webapp:Service:Web {component_id: '2', name: 'WebApp', type: 'Service.Web'}),
+(browser:SW:Browser {component_id: '3', name: 'Browser', type: 'SW.Browser'}),
+(internet:Network:WAN {component_id: '4', name: 'Internet', type: 'Network.WAN'}),
+
+(web_server)-[:hosts {}]->(webapp),
+(browser)-[:connects {}]->(internet),
+(internet)-[:connects {}]->(webapp);
+

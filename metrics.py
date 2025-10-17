@@ -285,7 +285,7 @@ class GraphMetricsCalculator:
             unique_to_graph2=unique_to_graph2
         )
         
-        self.logger.info(f"Graph comparison completed. Similarity score: {result.get_similarity_score():.3f}")
+        self.logger.info(f"Graph comparison completed. Edit distance: {result.edit_distance:.3f}")
         
         return result
     

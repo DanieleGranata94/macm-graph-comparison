@@ -1,0 +1,9 @@
+// Test Case 6B: Due nodi connessi
+// Expected vs 6A: Edit Distance = 2 (1 nodo + 1 relazione)
+
+CREATE 
+(device1:HW:Device {component_id: '1', name: 'Device1', type: 'HW.Device'}),
+(device2:HW:Device {component_id: '2', name: 'Device2', type: 'HW.Device'}),
+
+(device1)-[:connects {}]->(device2);
+

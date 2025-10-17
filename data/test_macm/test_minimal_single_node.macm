@@ -1,0 +1,5 @@
+// Test Case 6A: Singolo nodo
+// Expected vs 6B: Test caso minimale
+
+CREATE (single:HW:Device {component_id: '1', name: 'SingleDevice', type: 'HW.Device'});
+

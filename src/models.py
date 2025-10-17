@@ -167,35 +167,6 @@ class GraphComparisonResult:
     common_relationships: Set[str] = field(default_factory=set)
     unique_to_graph1: Set[str] = field(default_factory=set)
     unique_to_graph2: Set[str] = field(default_factory=set)
-    
-    def get_similarity_score(self) -> float:
-        """
-        Calculate an overall similarity score between 0 and 1.
-        
-        Returns:
-            Similarity score where 1 means identical graphs
-        """
-        # Weighted combination of different metrics
-        weights = {
-            'edit_distance': 0.3,
-            'mcs_ratio': 0.3,
-            'degree_similarity': 0.2,
-            'label_similarity': 0.2
-        }
-        
-        # Normalize metrics to 0-1 scale
-        edit_similarity = 1.0 - self.normalized_edit_distance
-        mcs_similarity = (self.mcs_ratio_graph1 + self.mcs_ratio_graph2) / 2.0
-        
-        score = (
-            weights['edit_distance'] * edit_similarity +
-            weights['mcs_ratio'] * mcs_similarity +
-            weights['degree_similarity'] * self.degree_distribution_similarity +
-            weights['label_similarity'] * self.label_distribution_similarity
-        )
-        
-        return max(0.0, min(1.0, score))
-
 
 def neo4j_node_to_graph_node(neo4j_node) -> GraphNode:
     """

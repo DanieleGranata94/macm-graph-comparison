@@ -17,11 +17,10 @@ def plot_jetracer_all_metrics(result_correct, result_incorrect, output_dir="outp
     reference_value = max(size_graph1, size_graph2)
     # Metriche normalizzate rispetto al valore di riferimento
     metrics = [
-        result_correct.get_similarity_score(),
         result_correct.mcs_ratio_graph1
     ]
-    metric_labels = ["Similarity Score", "MCS Ratio"]
-    colors = ["#43a047", "#1976d2"]
+    metric_labels = ["Maximum Common Subgraph"]
+    colors = ["#1976d2"]
 
 
 def plot_all_metrics_raw(result, output_dir="output"):
@@ -35,13 +34,12 @@ def plot_all_metrics_raw(result, output_dir="output"):
 
     # Raccogli le metriche raw
     metrics = [
-        result.get_similarity_score(),
         result.mcs_ratio_graph1,
         result.supergraph_ratio_graph1,
         result.edit_distance
     ]
-    labels = ["Similarity Score", "MCS Ratio", "Supergraph Ratio", "Edit Distance"]
-    colors = ["#43a047", "#1976d2", "#ffa000", "#F44336"]
+    labels = ["Maximum Common Subgraph", "Minimum Common Supergraph", "Edit Distance"]
+    colors = ["#1976d2", "#ffa000", "#F44336"]
 
     plt.figure(figsize=(9,6))
     plt.style.use('seaborn-v0_8-darkgrid')
@@ -55,39 +53,6 @@ def plot_all_metrics_raw(result, output_dir="output"):
 
     plt.tight_layout(pad=3)
     path = os.path.join(output_dir, "all_metrics_raw.png")
-    plt.savefig(path, dpi=120)
-    plt.close()
-    print(f"Chart saved as {path}")
-
-
-def plot_metrics_in_0_1_range(result, output_dir="output"):
-    """Genera un grafico con le sole metriche il cui valore raw è già nel range [0,1]."""
-    import matplotlib.pyplot as plt
-    import os
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    # Only plot the two metrics that are guaranteed to be in [0,1]
-    similarity = float(result.get_similarity_score())
-    mcs_ratio = float(getattr(result, 'mcs_ratio_graph1', 0.0))
-
-    labels = ["Similarity Score", "MCS Ratio"]
-    metrics = [similarity, mcs_ratio]
-    colors = ["#43a047", "#1976d2"]
-
-    plt.figure(figsize=(7,5))
-    plt.style.use('seaborn-v0_8-darkgrid')
-    bars = plt.bar(labels, metrics, color=colors, edgecolor='black', width=0.6)
-    plt.ylim(0, 1.05)
-    plt.ylabel("Metric Value (0-1)", fontsize=13)
-    plt.title("Metrics in Range [0,1]", fontsize=14, fontweight='bold')
-
-    for bar in bars:
-        height = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width()/2, height + 0.02, f"{height:.2f}", ha='center', va='bottom', fontsize=10)
-
-    plt.tight_layout(pad=3)
-    path = os.path.join(output_dir, "metrics_in_0_1_range.png")
     plt.savefig(path, dpi=120)
     plt.close()
     print(f"Chart saved as {path}")
@@ -114,7 +79,6 @@ def plot_all_metrics_normalized(result, output_dir="output"):
     if not max_edit_distance or max_edit_distance <= 0:
         max_edit_distance = 100.0
 
-    sim = float(result.get_similarity_score())
     mcs = float(getattr(result, 'mcs_ratio_graph1', 0.0))
     super_r = float(getattr(result, 'supergraph_ratio_graph1', 0.0))
     edit = float(getattr(result, 'edit_distance', 0.0))
@@ -124,8 +88,8 @@ def plot_all_metrics_normalized(result, output_dir="output"):
     super_n = max(0.0, min(1.0, super_r))
     edit_n = max(0.0, min(1.0, 1.0 - (edit / max_edit_distance)))
 
-    metrics = [sim, mcs_n, super_n, edit_n]
-    labels = ["Similarity Score", "MCS Ratio", "Supergraph Ratio", "Edit Distance Similarity"]
+    metrics = [mcs_n, super_n, edit_n]
+    labels = ["Maximum Common Subgraph", "Minimum Common Supergraph", "Edit Distance Similarity"]
     colors = ["#43a047", "#1976d2", "#ffa000", "#F44336"]
 
     plt.figure(figsize=(9,6))
@@ -145,50 +109,6 @@ def plot_all_metrics_normalized(result, output_dir="output"):
     plt.close()
     print(f"Chart saved as {path}")
 
-def plot_similarity_metrics_all(result, output_dir="output"):
-    """
-    Genera un grafico a barre con i valori di similarity per una coppia di grafi, normalizzati, senza Supergraph Ratio.
-    Args:
-        result: GraphComparisonResult
-        output_dir: directory dove salvare il grafico
-    """
-    import matplotlib.pyplot as plt
-    import os
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    # Calcolo dei valori normalizzati
-    similarity_score = result.get_similarity_score()
-    mcs_ratio = result.mcs_ratio_graph1
-    edit_distance = result.edit_distance
-
-    max_edit_distance = 100  # Supponendo un valore massimo teorico per Edit Distance
-
-    normalized_metrics = [
-        similarity_score,  # Supponendo che sia già normalizzato tra 0 e 1
-        mcs_ratio,         # Supponendo che sia già normalizzato tra 0 e 1
-        1 - (edit_distance / max_edit_distance)  # Normalizzazione inversa per Edit Distance
-    ]
-
-    metric_labels = ["Similarity Score", "MCS Ratio", "Edit Distance"]
-    colors = ["#43a047", "#1976d2", "#F44336"]
-
-    plt.figure(figsize=(8,6))
-    plt.style.use('seaborn-v0_8-darkgrid')
-    bars = plt.bar(metric_labels, normalized_metrics, color=colors, edgecolor='black', width=0.6)
-
-    plt.ylabel("Normalized Metric Value", fontsize=13)
-    plt.title("All Similarity Metrics (Normalized)", fontsize=15, fontweight='bold')
-
-    for bar in bars:
-        height = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width()/2, height + 0.04, f"{height:.2f}", ha='center', va='bottom', fontsize=12, fontweight='bold')
-
-    plt.tight_layout(pad=3)
-    plt.savefig(os.path.join(output_dir, "overall_similarity_normalized.png"), dpi=120)
-    plt.close()
-    print(f"Chart saved as {output_dir}/overall_similarity_normalized.png")
-
 def plot_similarity_metrics_normalized(result, output_dir="output"):
     """
     Genera un grafico a barre solo con le metriche normalizzate tra 0 e 1, senza Supergraph Ratio.
@@ -202,11 +122,10 @@ def plot_similarity_metrics_normalized(result, output_dir="output"):
         os.makedirs(output_dir)
 
     metrics = [
-        result.get_similarity_score(),
         result.mcs_ratio_graph1
     ]
-    metric_labels = ["Similarity Score", "MCS Ratio"]
-    colors = ["#43a047", "#1976d2"]
+    metric_labels = ["Maximum Common Subgraph"]
+    colors = ["#1976d2"]
 
     plt.figure(figsize=(7,6))
     plt.style.use('seaborn-v0_8-darkgrid')
@@ -255,14 +174,13 @@ def plot_normalized_to_identity(result, output_dir="output"):
     print(f"Debug - Normalized edit: {normalized_edit}")
 
     metrics = [
-        result.get_similarity_score(),  # già normalizzato tra 0 e 1
         result.mcs_ratio_graph1,        # già normalizzato tra 0 e 1
         result.supergraph_ratio_graph1, # già normalizzato tra 0 e 1
         normalized_edit                 # normalizzato per tendere a 1 quando edit_distance = 0
     ]
     
-    metric_labels = ["Similarity Score", "MCS Ratio", "Supergraph Ratio", "Normalized Edit Distance"]
-    colors = ["#43a047", "#1976d2", "#ffa000", "#F44336"]
+    metric_labels = ["Maximum Common Subgraph", "Minimum Common Supergraph", "Normalized Edit Distance"]
+    colors = ["#1976d2", "#ffa000", "#F44336"]
 
     plt.figure(figsize=(8,6))
     plt.style.use('seaborn-v0_8-darkgrid')
@@ -307,51 +225,6 @@ def plot_jetracer_comparison(result_correct, result_incorrect, output_dir="outpu
     """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-
-
-def plot_similarity_metrics_all(result, output_dir="output"):
-    """
-    Genera un grafico a barre con i valori di similarity per una coppia di grafi, normalizzati, senza Supergraph Ratio.
-    Args:
-        result: GraphComparisonResult
-        output_dir: directory dove salvare il grafico
-    """
-    import matplotlib.pyplot as plt
-    import os
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    # Calcolo dei valori normalizzati
-    similarity_score = result.get_similarity_score()
-    mcs_ratio = result.mcs_ratio_graph1
-    edit_distance = result.edit_distance
-
-    max_edit_distance = 100  # Supponendo un valore massimo teorico per Edit Distance
-
-    normalized_metrics = [
-        similarity_score,  # Supponendo che sia già normalizzato tra 0 e 1
-        mcs_ratio,         # Supponendo che sia già normalizzato tra 0 e 1
-        1 - (edit_distance / max_edit_distance)  # Normalizzazione inversa per Edit Distance
-    ]
-
-    metric_labels = ["Similarity Score", "MCS Ratio", "Edit Distance"]
-    colors = ["#43a047", "#1976d2", "#F44336"]
-
-    plt.figure(figsize=(8,6))
-    plt.style.use('seaborn-v0_8-darkgrid')
-    bars = plt.bar(metric_labels, normalized_metrics, color=colors, edgecolor='black', width=0.6)
-
-    plt.ylabel("Normalized Metric Value", fontsize=13)
-    plt.title("All Similarity Metrics (Normalized)", fontsize=15, fontweight='bold')
-
-    for bar in bars:
-        height = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width()/2, height + 0.04, f"{height:.2f}", ha='center', va='bottom', fontsize=12, fontweight='bold')
-
-    plt.tight_layout(pad=3)
-    plt.savefig(os.path.join(output_dir, "all_similarity_metrics_normalized.png"), dpi=120)
-    plt.close()
-    print(f"Chart saved as {output_dir}/all_similarity_metrics_normalized.png")
 
 
 class GraphMetricsCalculator:
@@ -622,8 +495,11 @@ class GraphMetricsCalculator:
         else:
             normalized_edit_distance = 0
         
-        mcs_ratio_graph1 = mcs_size / len(graph1.nodes) if len(graph1.nodes) > 0 else 0
-        mcs_ratio_graph2 = mcs_size / len(graph2.nodes) if len(graph2.nodes) > 0 else 0
+        # MCS ratio should be calculated as: mcs_size / (nodes + relationships) of each graph
+        graph1_size = len(graph1.nodes) + len(graph1.relationships)
+        graph2_size = len(graph2.nodes) + len(graph2.relationships)
+        mcs_ratio_graph1 = mcs_size / graph1_size if graph1_size > 0 else 0
+        mcs_ratio_graph2 = mcs_size / graph2_size if graph2_size > 0 else 0
 
         # Compute structural Jaccard (based on asset type + local relations) and
         # use it as the interpretable similarity measure in place of raw supergraph ratio
@@ -677,7 +553,7 @@ class GraphMetricsCalculator:
         if hasattr(self, '_last_edit_operations'):
             result.edit_operations_detail = self._last_edit_operations
         
-        self.logger.info(f"Graph comparison completed. Similarity score: {result.get_similarity_score():.3f}")
+        self.logger.info(f"Graph comparison completed. Edit distance: {result.edit_distance:.3f}")
         
         return result
     

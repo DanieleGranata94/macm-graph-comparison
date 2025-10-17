@@ -1,0 +1,11 @@
+// Test Case 2A: Grafo Base
+// Expected vs 2B: Edit Distance bassa, MCS alto, differenza di 1 nodo
+
+CREATE 
+(server:HW:Server {component_id: '1', name: 'Server', type: 'HW.Server'}),
+(database:Service:Database {component_id: '2', name: 'Database', type: 'Service.Database'}),
+(client:HW:UE {component_id: '3', name: 'Client', type: 'HW.UE'}),
+
+(server)-[:hosts {}]->(database),
+(client)-[:connects {}]->(server);
+

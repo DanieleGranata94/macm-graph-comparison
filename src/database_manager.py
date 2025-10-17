@@ -84,9 +84,22 @@ class Neo4jManager:
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
                 cypher_content = file.read()
-                
+            
+            # Remove comments and split by semicolons to handle multiple statements
+            lines = []
+            for line in cypher_content.split('\n'):
+                # Remove comments (lines starting with //)
+                if not line.strip().startswith('//'):
+                    lines.append(line)
+            
+            cleaned_content = '\n'.join(lines)
+            
+            # Split by semicolon and execute each statement separately
+            statements = [stmt.strip() for stmt in cleaned_content.split(';') if stmt.strip()]
+            
             with self.get_session() as session:
-                session.run(cypher_content)
+                for statement in statements:
+                    session.run(statement)
                 
             self.logger.info(f"Successfully executed Cypher file: {file_path}")
             

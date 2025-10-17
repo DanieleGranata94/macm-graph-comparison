@@ -1,0 +1,13 @@
+// Test Case 3B: Architettura IoT (completamente diversa)
+// Expected vs 3A: Edit Distance alta, MCS = 0, nessuna sovrapposizione
+
+CREATE 
+(iot_device:HW:IoT:Device {component_id: '1', name: 'SmartSensor', type: 'HW.IoT.Device'}),
+(gateway:HW:Gateway {component_id: '2', name: 'Gateway', type: 'HW.Gateway'}),
+(cloud:CSP {component_id: '3', name: 'CloudPlatform', type: 'CSP'}),
+(mobile_app:Service:App {component_id: '4', name: 'MobileApp', type: 'Service.App'}),
+
+(iot_device)-[:connects {}]->(gateway),
+(gateway)-[:connects {}]->(cloud),
+(mobile_app)-[:uses {}]->(cloud);
+

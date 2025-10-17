@@ -1,0 +1,9 @@
+// Test Case 5A: Grafo Piccolo (sottoinsieme di 5B)
+// Expected vs 5B: MCS = 100% di A, Supergraph = dimensione di B
+
+CREATE 
+(server:HW:Server {component_id: '1', name: 'Server', type: 'HW.Server'}),
+(database:Service:Database {component_id: '2', name: 'Database', type: 'Service.Database'}),
+
+(server)-[:hosts {}]->(database);
+

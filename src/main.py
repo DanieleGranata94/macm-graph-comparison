@@ -51,9 +51,9 @@ class GraphComparisonApp:
             file2: Path to second Cypher file (overrides config)
         """
         try:
-            # Always use files defined in configuration (config.py or env vars)
-            cypher_file1 = self.app_config.cypher_file_1
-            cypher_file2 = self.app_config.cypher_file_2
+            # Use command-line arguments if provided, otherwise use config defaults
+            cypher_file1 = file1 if file1 else self.app_config.cypher_file_1
+            cypher_file2 = file2 if file2 else self.app_config.cypher_file_2
 
             self.logger.info(f"Starting graph comparison between {cypher_file1} and {cypher_file2}")
             
@@ -263,14 +263,11 @@ def main():
     output_dir = "output"
     if result is not None:
         from src.metrics import (
-            plot_similarity_metrics_all,
             plot_all_metrics_raw,
-            plot_metrics_in_0_1_range,
             plot_all_metrics_normalized,
         )
-        # Generate the three requested charts
+        # Generate the two requested charts
         plot_all_metrics_raw(result, output_dir=output_dir)
-        plot_metrics_in_0_1_range(result, output_dir=output_dir)
         plot_all_metrics_normalized(result, output_dir=output_dir)
     else:
         print("Errore: Nessun risultato dalla comparazione dei grafi.")

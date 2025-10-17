@@ -164,7 +164,6 @@ def generate_graph_diff(graph1: Graph, graph2: Graph, comparison_result, output_
 
     # Build summary metrics with detailed edit operations
     summary = {
-        "similarity_score": float(comparison_result.get_similarity_score()),
         "mcs_ratio_graph1": float(getattr(comparison_result, 'mcs_ratio_graph1', 0.0)),
         "mcs_ratio_graph2": float(getattr(comparison_result, 'mcs_ratio_graph2', 0.0)),
         "edit_distance": float(getattr(comparison_result, 'edit_distance', 0.0)),

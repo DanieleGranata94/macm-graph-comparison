@@ -51,8 +51,7 @@ def query_comparison_results():
             # Get comparison results
             result = session.run("""
                 MATCH (cr:ComparisonResult)
-                RETURN cr.similarity_score as similarity,
-                       cr.edit_distance as edit_distance,
+                RETURN cr.edit_distance as edit_distance,
                        cr.normalized_edit_distance as normalized_edit_distance,
                        cr.mcs_size as mcs_size,
                        cr.common_nodes_count as common_nodes,
