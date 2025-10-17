@@ -1,0 +1,12 @@
+// Test Case: Bassa Similarità (20-30%)
+// Pochi elementi in comune, topologie molto diverse
+
+CREATE 
+(server:HW:Server {component_id: '1', name: 'Server', type: 'HW.Server'}),
+(database:Service:Database {component_id: '2', name: 'Database', type: 'Service.Database'}),
+(backup:HW:Storage {component_id: '3', name: 'BackupStorage', type: 'HW.Storage'}),
+(monitor:Service:Monitoring {component_id: '4', name: 'Monitor', type: 'Service.Monitoring'}),
+
+(server)-[:hosts {}]->(database),
+(server)-[:connects {}]->(backup),
+(monitor)-[:uses {}]->(server);

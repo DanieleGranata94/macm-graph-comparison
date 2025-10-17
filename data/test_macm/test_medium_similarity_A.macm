@@ -1,0 +1,14 @@
+// Test Case: Media Similarità (50-60%)
+// Architettura simile ma con alcuni componenti diversi
+
+CREATE 
+(webserver:HW:Server {component_id: '1', name: 'WebServer', type: 'HW.Server'}),
+(database:Service:Database {component_id: '2', name: 'Database', type: 'Service.Database'}),
+(loadbalancer:HW:LoadBalancer {component_id: '3', name: 'LoadBalancer', type: 'HW.LoadBalancer'}),
+(client:HW:UE {component_id: '4', name: 'Client', type: 'HW.UE'}),
+(network:Network:WAN {component_id: '5', name: 'Internet', type: 'Network.WAN'}),
+
+(webserver)-[:hosts {}]->(database),
+(loadbalancer)-[:connects {}]->(webserver),
+(client)-[:connects {}]->(network),
+(network)-[:connects {}]->(loadbalancer);

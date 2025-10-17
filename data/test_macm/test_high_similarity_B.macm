@@ -1,0 +1,14 @@
+// Test Case: Alta Similarità (90%)
+// Solo un edge diverso: cache invece di database
+
+CREATE 
+(server:HW:Server {component_id: '1', name: 'Server', type: 'HW.Server'}),
+(database:Service:Database {component_id: '2', name: 'Database', type: 'Service.Database'}),
+(cache:Service:Cache {component_id: '3', name: 'Cache', type: 'Service.Cache'}),
+(client:HW:UE {component_id: '4', name: 'Client', type: 'HW.UE'}),
+(network:Network:LAN {component_id: '5', name: 'Network', type: 'Network.LAN'}),
+
+(server)-[:hosts {}]->(cache),
+(server)-[:hosts {}]->(database),
+(client)-[:connects {}]->(network),
+(network)-[:connects {}]->(server);

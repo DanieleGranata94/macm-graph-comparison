@@ -1,0 +1,14 @@
+// Test Case: Media Similarità (50-60%)
+// Stessa dimensione ma diversa topologia e alcuni tipi di nodi
+
+CREATE 
+(appserver:HW:Server {component_id: '1', name: 'AppServer', type: 'HW.Server'}),
+(database:Service:Database {component_id: '2', name: 'Database', type: 'Service.Database'}),
+(firewall:Security:Firewall {component_id: '3', name: 'Firewall', type: 'Security.Firewall'}),
+(client:HW:UE {component_id: '4', name: 'Client', type: 'HW.UE'}),
+(network:Network:LAN {component_id: '5', name: 'LAN', type: 'Network.LAN'}),
+
+(appserver)-[:hosts {}]->(database),
+(firewall)-[:connects {}]->(appserver),
+(client)-[:connects {}]->(firewall),
+(network)-[:connects {}]->(client);

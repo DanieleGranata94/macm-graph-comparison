@@ -1,0 +1,14 @@
+// Test Case: Overlap Parziale - Architettura Web tradizionale
+// Alcuni componenti in comune con B, ma contesto diverso
+
+CREATE 
+(webserver:HW:Server {component_id: '1', name: 'WebServer', type: 'HW.Server'}),
+(appserver:HW:Server {component_id: '2', name: 'AppServer', type: 'HW.Server'}),
+(database:Service:Database {component_id: '3', name: 'Database', type: 'Service.Database'}),
+(cache:Service:Cache {component_id: '4', name: 'Cache', type: 'Service.Cache'}),
+(browser:SW:Browser {component_id: '5', name: 'Browser', type: 'SW.Browser'}),
+
+(browser)-[:connects {}]->(webserver),
+(webserver)-[:connects {}]->(appserver),
+(appserver)-[:hosts {}]->(database),
+(appserver)-[:hosts {}]->(cache);

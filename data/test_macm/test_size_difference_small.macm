@@ -1,0 +1,10 @@
+// Test Case: Differenza di dimensione - Piccolo
+// Grafo piccolo ma con struttura valida
+
+CREATE 
+(server:HW:Server {component_id: '1', name: 'Server', type: 'HW.Server'}),
+(client:HW:UE {component_id: '2', name: 'Client', type: 'HW.UE'}),
+(network:Network:LAN {component_id: '3', name: 'Network', type: 'Network.LAN'}),
+
+(client)-[:connects {}]->(network),
+(network)-[:connects {}]->(server);

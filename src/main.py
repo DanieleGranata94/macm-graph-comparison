@@ -91,6 +91,27 @@ class GraphComparisonApp:
                 # Display results
                 self._display_results(comparison_result)
                 
+                # Create output folder with timestamp and descriptive name
+                import os
+                import shutil
+                from datetime import datetime
+                from pathlib import Path
+                
+                # Extract file names without extensions
+                file1_name = Path(cypher_file1).stem
+                file2_name = Path(cypher_file2).stem
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                output_folder = f"output/{file1_name}_vs_{file2_name}_{timestamp}"
+                os.makedirs(output_folder, exist_ok=True)
+                
+                # Copy .macm files to output folder
+                try:
+                    shutil.copy2(cypher_file1, f"{output_folder}/{Path(cypher_file1).name}")
+                    shutil.copy2(cypher_file2, f"{output_folder}/{Path(cypher_file2).name}")
+                    self.logger.info(f"Copied input files to {output_folder}/")
+                except Exception as e:
+                    self.logger.warning(f"Could not copy input files: {e}")
+                
                 # Save results to file if requested
                 if self.app_config.output_format != "text":
                     self._save_results(comparison_result, cypher_file1, cypher_file2)
@@ -98,7 +119,7 @@ class GraphComparisonApp:
                 # Generate a structured JSON diff describing additions/removals/changes
                 try:
                     from diff import generate_graph_diff
-                    out_diff = generate_graph_diff(graph1, graph2, comparison_result, output_path="output/graph_diff.json")
+                    out_diff = generate_graph_diff(graph1, graph2, comparison_result, output_path=f"{output_folder}/graph_diff.json")
                     self.logger.info(f"Graph diff written to {out_diff}")
                 except Exception as e:
                     self.logger.warning(f"Unable to generate graph diff: {e}")
@@ -106,19 +127,167 @@ class GraphComparisonApp:
                 # Genera sempre le visualizzazioni dei grafi di input come PNG
                 try:
                     from metrics import generate_graph_visualizations
-                    generate_graph_visualizations(graph1, graph2, "output/macm_output", cypher_file1, cypher_file2)
-                    self.logger.info("Visualizzazioni dei grafi PNG generate nella cartella output/macm_output/")
+                    generate_graph_visualizations(graph1, graph2, output_folder, cypher_file1, cypher_file2)
+                    self.logger.info(f"Graph visualizations generated in {output_folder}/")
                 except Exception as e:
-                    self.logger.warning(f"Errore durante la generazione delle visualizzazioni dei grafi: {e}")
+                    self.logger.warning(f"Error generating graph visualizations: {e}")
+                
+                # Generate README with comparison summary
+                try:
+                    self._generate_comparison_readme(comparison_result, output_folder, cypher_file1, cypher_file2, graph1, graph2)
+                    self.logger.info(f"Comparison README generated in {output_folder}/README.md")
+                except Exception as e:
+                    self.logger.warning(f"Error generating README: {e}")
                 
                 self.logger.info("Graph comparison completed successfully")
-                return comparison_result
+                return comparison_result, output_folder  # Return also output folder
                 
         except Exception as e:
             self.logger.error(f"Application error: {e}")
             if self.app_config.verbose:
                 self.logger.exception("Full traceback:")
             sys.exit(1)
+    
+    def _generate_comparison_readme(self, result, output_folder: str, file1: str, file2: str, graph1, graph2) -> None:
+        """
+        Generate a README.md file describing the comparison results.
+        
+        Args:
+            result: GraphComparisonResult object
+            output_folder: Output folder path
+            file1: First file path
+            file2: Second file path
+            graph1: First Graph object
+            graph2: Second Graph object
+        """
+        from pathlib import Path
+        
+        readme_content = f"""# Graph Comparison Report
+
+## Comparison Overview
+
+**Date**: {Path(output_folder).name.split('_')[-2] + '_' + Path(output_folder).name.split('_')[-1]}  
+**Graph 1**: `{Path(file1).name}`  
+**Graph 2**: `{Path(file2).name}`
+
+---
+
+## Graph Statistics
+
+### Graph 1
+- **Nodes**: {len(graph1.nodes)}
+- **Relationships**: {len(graph1.relationships)}
+- **Node Labels**: {dict(graph1.get_label_statistics())}
+
+### Graph 2
+- **Nodes**: {len(graph2.nodes)}
+- **Relationships**: {len(graph2.relationships)}
+- **Node Labels**: {dict(graph2.get_label_statistics())}
+
+---
+
+## Comparison Metrics
+
+### Edit Distance
+- **Raw Edit Distance**: {result.edit_distance:.2f}
+- **Normalized (0-1)**: {result.normalized_edit_distance:.3f}
+- **Interpretation**: {"Identical" if result.edit_distance == 0 else "Very similar" if result.normalized_edit_distance < 0.3 else "Somewhat similar" if result.normalized_edit_distance < 0.7 else "Very different"}
+
+### Maximum Common Subgraph (MCS)
+- **MCS Size**: {result.maximum_common_subgraph_size} elements (nodes + edges)
+- **MCS Ratio (Graph 1)**: {result.mcs_ratio_graph1:.3f} ({result.mcs_ratio_graph1*100:.1f}%)
+- **MCS Ratio (Graph 2)**: {result.mcs_ratio_graph2:.3f} ({result.mcs_ratio_graph2*100:.1f}%)
+
+### Minimum Common Supergraph
+- **Supergraph Size**: {result.minimum_common_supergraph_size} elements
+- **Supergraph Ratio (Graph 1)**: {result.supergraph_ratio_graph1:.3f}
+- **Supergraph Ratio (Graph 2)**: {result.supergraph_ratio_graph2:.3f}
+
+### Structural Similarity
+- **Node Count Difference**: {result.node_count_difference}
+- **Relationship Count Difference**: {result.relationship_count_difference}
+- **Degree Distribution Similarity**: {result.degree_distribution_similarity:.3f}
+- **Label Distribution Similarity**: {result.label_distribution_similarity:.3f}
+
+---
+
+## Detailed Differences
+
+### Common Elements
+- **Common Nodes**: {len(result.common_nodes)}
+- **Common Relationships**: {len(result.common_relationships)}
+
+### Unique Elements
+- **Unique to Graph 1**: {len(result.unique_to_graph1)} elements
+- **Unique to Graph 2**: {len(result.unique_to_graph2)} elements
+
+---
+
+## Files in This Directory
+
+- `README.md` - This comparison report
+- `{Path(file1).name}` - First input MACM file
+- `{Path(file2).name}` - Second input MACM file  
+- `graph_diff.json` - Detailed JSON diff of the two graphs
+- `graph_*_graph.png` - Visualizations of individual graphs
+- `graph_comparison.png` - Side-by-side comparison visualization
+- `all_metrics_raw.png` - Raw metric values chart
+- `all_metrics_normalized_0_1.png` - Normalized metrics chart (0-1 scale)
+
+---
+
+## Interpretation
+
+**Overall Similarity**: {self._get_interpretation_label(result)}
+
+{self._get_interpretation_details(result)}
+
+---
+
+*Generated by Graph Comparison Tool*
+"""
+        
+        readme_path = Path(output_folder) / "README.md"
+        with open(readme_path, 'w') as f:
+            f.write(readme_content)
+    
+    def _get_interpretation_label(self, result) -> str:
+        """Get interpretation label based on edit distance."""
+        if result.edit_distance == 0:
+            return "Identical graphs"
+        elif result.normalized_edit_distance < 0.3:
+            return "Very similar graphs"
+        elif result.normalized_edit_distance < 0.6:
+            return "Moderately similar graphs"
+        elif result.normalized_edit_distance < 0.8:
+            return "Somewhat similar graphs"
+        else:
+            return "Very different graphs"
+    
+    def _get_interpretation_details(self, result) -> str:
+        """Generate detailed interpretation based on metrics."""
+        details = []
+        
+        if result.edit_distance == 0:
+            details.append("✅ The graphs are **identical** - no differences detected.")
+        elif result.normalized_edit_distance < 0.3:
+            details.append("✅ The graphs are **very similar** with minimal structural differences.")
+        elif result.normalized_edit_distance < 0.7:
+            details.append("⚠️ The graphs have **moderate differences** - some structural variations exist.")
+        else:
+            details.append("❌ The graphs are **very different** - significant structural differences detected.")
+        
+        if result.mcs_ratio_graph1 > 0.8:
+            details.append(f"- High MCS ratio ({result.mcs_ratio_graph1*100:.0f}%) indicates strong structural overlap.")
+        elif result.mcs_ratio_graph1 < 0.2:
+            details.append(f"- Low MCS ratio ({result.mcs_ratio_graph1*100:.0f}%) indicates minimal structural overlap.")
+        
+        if result.node_count_difference == 0 and result.relationship_count_difference == 0:
+            details.append("- Graphs have the same size (same number of nodes and relationships).")
+        elif abs(result.node_count_difference) > 5 or abs(result.relationship_count_difference) > 5:
+            details.append(f"- Significant size difference detected (Δnodes={result.node_count_difference}, Δedges={result.relationship_count_difference}).")
+        
+        return "\n".join(details)
     
     def _display_results(self, result) -> None:
         """
@@ -258,22 +427,29 @@ def main():
 
     # Create and run application
     app = GraphComparisonApp(db_config, app_config)
-    result = app.run(args.file1, args.file2)
+    result_tuple = app.run(args.file1, args.file2)
     
-    output_dir = "output"
+    # Unpack result and output folder
+    if result_tuple is not None and isinstance(result_tuple, tuple):
+        result, output_folder = result_tuple
+    else:
+        result = result_tuple
+        output_folder = "output"
+    
     if result is not None:
         from src.metrics import (
             plot_all_metrics_raw,
             plot_all_metrics_normalized,
         )
-        # Generate the two requested charts
-        plot_all_metrics_raw(result, output_dir=output_dir)
-        plot_all_metrics_normalized(result, output_dir=output_dir)
+        # Generate the two requested charts in the specific output folder
+        plot_all_metrics_raw(result, output_dir=output_folder)
+        plot_all_metrics_normalized(result, output_dir=output_folder)
+        
+        print(f"Grafici PNG generati nella cartella {output_folder}/")
     else:
         print("Errore: Nessun risultato dalla comparazione dei grafi.")
     
     # Exit message
-    print(f"Grafici PNG generati nella cartella {output_dir}/")
     print("Graph comparison completed successfully")
 
 

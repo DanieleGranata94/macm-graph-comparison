@@ -1,0 +1,14 @@
+// Test Case: Overlap Parziale - Architettura Microservizi
+// Database e Cache in comune, ma topologia e altri componenti diversi
+
+CREATE 
+(apigateway:Service:Web {component_id: '1', name: 'APIGateway', type: 'Service.Web'}),
+(service1:Service:App {component_id: '2', name: 'Service1', type: 'Service.App'}),
+(database:Service:Database {component_id: '3', name: 'Database', type: 'Service.Database'}),
+(cache:Service:Cache {component_id: '4', name: 'Cache', type: 'Service.Cache'}),
+(messagequeue:Service:Queue {component_id: '5', name: 'MessageQueue', type: 'Service.Queue'}),
+
+(apigateway)-[:connects {}]->(service1),
+(service1)-[:uses {}]->(database),
+(service1)-[:uses {}]->(cache),
+(service1)-[:uses {}]->(messagequeue);

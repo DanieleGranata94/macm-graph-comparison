@@ -81,16 +81,14 @@ def plot_all_metrics_normalized(result, output_dir="output"):
 
     mcs = float(getattr(result, 'mcs_ratio_graph1', 0.0))
     super_r = float(getattr(result, 'supergraph_ratio_graph1', 0.0))
-    edit = float(getattr(result, 'edit_distance', 0.0))
 
     # Normalize / clip
     mcs_n = max(0.0, min(1.0, mcs))
     super_n = max(0.0, min(1.0, super_r))
-    edit_n = max(0.0, min(1.0, 1.0 - (edit / max_edit_distance)))
 
-    metrics = [mcs_n, super_n, edit_n]
-    labels = ["Maximum Common Subgraph", "Minimum Common Supergraph", "Edit Distance Similarity"]
-    colors = ["#43a047", "#1976d2", "#ffa000", "#F44336"]
+    metrics = [mcs_n, super_n]
+    labels = ["Maximum Common Subgraph", "Minimum Common Supergraph"]
+    colors = ["#43a047", "#1976d2"]
 
     plt.figure(figsize=(9,6))
     plt.style.use('seaborn-v0_8-darkgrid')

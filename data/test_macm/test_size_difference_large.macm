@@ -1,0 +1,20 @@
+// Test Case: Differenza di dimensione - Grande
+// Grafo grande con molti componenti (contiene il piccolo come sottoinsieme)
+
+CREATE 
+(server:HW:Server {component_id: '1', name: 'Server', type: 'HW.Server'}),
+(client:HW:UE {component_id: '2', name: 'Client', type: 'HW.UE'}),
+(network:Network:LAN {component_id: '3', name: 'Network', type: 'Network.LAN'}),
+(database:Service:Database {component_id: '4', name: 'Database', type: 'Service.Database'}),
+(cache:Service:Cache {component_id: '5', name: 'Cache', type: 'Service.Cache'}),
+(loadbalancer:HW:LoadBalancer {component_id: '6', name: 'LoadBalancer', type: 'HW.LoadBalancer'}),
+(firewall:Security:Firewall {component_id: '7', name: 'Firewall', type: 'Security.Firewall'}),
+(backup:HW:Storage {component_id: '8', name: 'Backup', type: 'HW.Storage'}),
+
+(client)-[:connects {}]->(network),
+(network)-[:connects {}]->(firewall),
+(firewall)-[:connects {}]->(loadbalancer),
+(loadbalancer)-[:connects {}]->(server),
+(server)-[:hosts {}]->(database),
+(server)-[:hosts {}]->(cache),
+(server)-[:connects {}]->(backup);

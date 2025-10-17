@@ -1,0 +1,12 @@
+// Test Case: Bassa Similarità (20-30%)
+// Solo database in comune, tutto il resto diverso
+
+CREATE 
+(iot_hub:CSP {component_id: '1', name: 'IoTHub', type: 'CSP'}),
+(database:Service:Database {component_id: '2', name: 'Database', type: 'Service.Database'}),
+(sensor:HW:IoT:Device {component_id: '3', name: 'Sensor', type: 'HW.IoT.Device'}),
+(gateway:HW:Gateway {component_id: '4', name: 'Gateway', type: 'HW.Gateway'}),
+
+(iot_hub)-[:provides {}]->(database),
+(sensor)-[:connects {}]->(gateway),
+(gateway)-[:connects {}]->(iot_hub);

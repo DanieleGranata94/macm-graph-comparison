@@ -54,6 +54,49 @@ Questa cartella contiene file MACM semplici per testare le metriche di confronto
   - Edit Distance: **2** (1 nodo + 1 relazione)
   - MCS Size: **1** (il singolo nodo comune)
 
+### Test 7: Alta Similarità (90%)
+- **File**: `test_high_similarity_A.macm`, `test_high_similarity_B.macm`
+- **Descrizione**: Grafi quasi identici, solo ordine degli edge diverso
+- **Risultati attesi**:
+  - Edit Distance: **0** (stessa struttura)
+  - MCS Ratio: **100%**
+  - Normalized Edit Distance: **0.0**
+
+### Test 8: Media Similarità (50-60%)
+- **File**: `test_medium_similarity_A.macm`, `test_medium_similarity_B.macm`
+- **Descrizione**: Architettura simile ma componenti parzialmente diversi (LoadBalancer vs Firewall)
+- **Risultati attesi**:
+  - Edit Distance: **Media** (~6-8)
+  - MCS Ratio: **~50-60%**
+  - Normalized Edit Distance: **0.4-0.6**
+  - Common Nodes: **~3** (Server, Database, Client)
+
+### Test 9: Bassa Similarità (20-30%)
+- **File**: `test_low_similarity_A.macm`, `test_low_similarity_B.macm`
+- **Descrizione**: Solo Database in comune, topologie completamente diverse
+- **Risultati attesi**:
+  - Edit Distance: **Alta** (~10-12)
+  - MCS Ratio: **~20-30%**
+  - Normalized Edit Distance: **0.7-0.8**
+  - Common Nodes: **1** (solo Database)
+
+### Test 10: Grande Differenza di Dimensione
+- **File**: `test_size_difference_small.macm`, `test_size_difference_large.macm`
+- **Descrizione**: Grafo piccolo (3 nodi) vs grande (8 nodi), piccolo è sottoinsieme
+- **Risultati attesi**:
+  - MCS Ratio (Small): **~66-100%** (maggior parte del piccolo è comune)
+  - MCS Ratio (Large): **~20-30%** (piccola parte del grande)
+  - Supergraph Size: **~dimensione del grafo grande**
+
+### Test 11: Overlap Parziale
+- **File**: `test_partial_overlap_A.macm`, `test_partial_overlap_B.macm`
+- **Descrizione**: Web tradizionale vs Microservizi - Database e Cache in comune
+- **Risultati attesi**:
+  - Edit Distance: **Media** (~8-10)
+  - MCS Ratio: **~40-50%**
+  - Common Nodes: **2** (Database, Cache)
+  - Dimostra come architetture diverse possano condividere componenti
+
 ## 🚀 Come Eseguire i Test
 
 ### Opzione 1: Script automatico
