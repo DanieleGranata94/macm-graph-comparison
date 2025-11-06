@@ -1,0 +1,12 @@
+// Test Case: Grafo Base
+// Expected vs B: Edit Distance per cambio di tipo asset
+
+CREATE 
+(server:HW:Server {component_id: '1', name: 'Server', type: 'HW.Server'}),
+(database:Service:Database {component_id: '2', name: 'Database', type: 'Service.Database'}),
+(client:HW:UE {component_id: '3', name: 'Client', type: 'HW.UE'}),
+(firewall:Security:Firewall {component_id: '4', name: 'Firewall', type: 'Security.Firewall'}),
+
+(server)-[:hosts {}]->(database),
+(client)-[:connects {}]->(firewall),
+(firewall)-[:connects {}]->(server);

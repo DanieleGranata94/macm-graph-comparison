@@ -12,20 +12,22 @@ from typing import Dict, List, Any, Optional, Iterator
 import neo4j
 from neo4j import GraphDatabase, Session, Result
 
-from config import DatabaseConfig
-
 
 class Neo4jManager:
     """Manages Neo4j database connections and operations."""
     
-    def __init__(self, config: DatabaseConfig):
+    def __init__(self, uri: str, username: str, password: str):
         """
-        Initialize the Neo4j manager with configuration.
+        Initialize the Neo4j manager with connection parameters.
         
         Args:
-            config: Database configuration settings
+            uri: Neo4j connection URI (e.g., bolt://localhost:7687)
+            username: Neo4j username
+            password: Neo4j password
         """
-        self.config = config
+        self.uri = uri
+        self.username = username
+        self.password = password
         self.driver: Optional[neo4j.Driver] = None
         self.logger = logging.getLogger(__name__)
         
@@ -33,18 +35,15 @@ class Neo4jManager:
         """Establish connection to Neo4j database."""
         try:
             self.driver = GraphDatabase.driver(
-                self.config.uri,
-                auth=(self.config.username, self.config.password),
-                max_connection_lifetime=self.config.max_connection_lifetime,
-                max_connection_pool_size=self.config.max_connection_pool_size,
-                connection_acquisition_timeout=self.config.connection_acquisition_timeout
+                self.uri,
+                auth=(self.username, self.password)
             )
             
             # Test connection
             with self.driver.session() as session:
                 session.run("RETURN 1")
                 
-            self.logger.info(f"Successfully connected to Neo4j at {self.config.uri}")
+            self.logger.info(f"Successfully connected to Neo4j at {self.uri}")
             
         except Exception as e:
             self.logger.error(f"Failed to connect to Neo4j: {e}")
@@ -177,3 +176,7 @@ class Neo4jManager:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit."""
         self.disconnect()
+
+
+# Alias for backward compatibility
+DatabaseManager = Neo4jManager

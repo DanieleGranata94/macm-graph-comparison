@@ -11,42 +11,8 @@ import json
 from typing import Dict, List, Any, Optional
 from pathlib import Path
 
-from config import AppConfig
-from models import Graph, GraphNode, GraphRelationship, GraphComparisonResult
-from database_manager import Neo4jManager
-
-
-def setup_logging(config: AppConfig) -> None:
-    """
-    Setup logging configuration.
-    
-    Args:
-        config: Application configuration
-    """
-    # Create formatter
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
-    
-    # Setup root logger
-    root_logger = logging.getLogger()
-    root_logger.setLevel(getattr(logging, config.log_level.upper()))
-    
-    # Remove existing handlers
-    for handler in root_logger.handlers[:]:
-        root_logger.removeHandler(handler)
-    
-    # Console handler
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(formatter)
-    root_logger.addHandler(console_handler)
-    
-    # File handler (if specified)
-    if config.log_file:
-        file_handler = logging.FileHandler(config.log_file)
-        file_handler.setFormatter(formatter)
-        root_logger.addHandler(file_handler)
+from .models import Graph, GraphNode, GraphRelationship, GraphComparisonResult
+from .database_manager import Neo4jManager
 
 
 def load_graph_from_cypher_file(neo4j_manager: Neo4jManager, file_path: str) -> Graph:
@@ -339,3 +305,7 @@ def validate_cypher_files(*file_paths: str) -> bool:
             return False
     
     return True
+
+
+# Alias for backward compatibility
+load_graph_from_cypher = load_graph_from_cypher_file
