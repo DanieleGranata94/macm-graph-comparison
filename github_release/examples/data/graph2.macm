@@ -1,0 +1,7 @@
+// Same architecture with different names
+CREATE 
+(ui:Component {name: 'FrontendApp', type: 'Service.WebUI'}),
+(api:Component {name: 'BackendService', type: 'Service.API'}),
+(store:Component {name: 'DataStore', type: 'System.Database'}),
+(ui)-[:connects]->(api),
+(api)-[:uses]->(store);

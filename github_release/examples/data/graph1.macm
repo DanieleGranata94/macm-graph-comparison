@@ -1,0 +1,7 @@
+// Simple 3-tier architecture
+CREATE 
+(client:Component {name: 'WebClient', type: 'Service.WebUI'}),
+(server:Component {name: 'APIServer', type: 'Service.API'}),
+(db:Component {name: 'Database', type: 'System.Database'}),
+(client)-[:connects]->(server),
+(server)-[:uses]->(db);
